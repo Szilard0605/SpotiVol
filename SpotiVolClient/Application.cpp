@@ -5,6 +5,7 @@
 #include "PacketIdentifiers.h"
 
 #include <Lmcons.h>
+#include <fstream>
 
 Application::Application(ApplicationInfo appInfo)
 	: m_AppInfo(appInfo)
@@ -15,6 +16,8 @@ Application::~Application() { }
 
 void Application::Run()
 {
+	ReadConfigFile();
+
 	m_Window.Initialize(m_AppInfo.name, m_AppInfo.width, m_AppInfo.height);
 
 	UI::SetOnVolumeChangeCallback([this](float volumeLevel) { OnUIVolumeChange(volumeLevel); });
@@ -23,9 +26,9 @@ void Application::Run()
 	char username[UNLEN + 1];
 	DWORD size = UNLEN + 1;
 	if(GetUserNameA(username, &size))
-		m_Client.Connect("192.168.0.177", 8080, username);
+		m_Client.Connect(m_AppInfo.serverIPAddress, 22506, username);
 	else
-		m_Client.Connect("192.168.0.177", 8080);
+		m_Client.Connect(m_AppInfo.serverIPAddress, 22506);
 
 	while (!m_Client.IsConnected())
 	{
@@ -45,6 +48,22 @@ void Application::Run()
 		UI::RenderWindowOutline();
 		UI::RenderConnected();
 		UI::EndFrame();
+	}
+}
+
+void Application::ReadConfigFile()
+{
+	std::ifstream configFile(m_AppInfo.configFilePath);
+	if (!configFile.is_open())
+		return;
+
+	std::string line;
+	while (std::getline(configFile, line))
+	{
+		if (line.rfind("serverIP=", 0) == 0)
+		{
+			m_AppInfo.serverIPAddress = line.substr(9);
+		}
 	}
 }
 

@@ -10,6 +10,9 @@ struct ApplicationInfo
 	std::string name;
 	int width;
 	int height;
+
+	std::string configFilePath = "config.ini";
+	std::string serverIPAddress = "127.0.0.1";
 };;
 
 class Application
@@ -22,6 +25,8 @@ private:
 	ApplicationInfo m_AppInfo;
 	Window m_Window;
 	SVClient m_Client;
+
+	void ReadConfigFile();
 
 	void OnUIVolumeChange(float volumeLevel);
 	void OnServerVolumeChange(float volumeLevel);

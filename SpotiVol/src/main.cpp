@@ -55,7 +55,7 @@ void OnUIVolumeChange(ServerClientInfo& clientInfo, float volumeLevel)
 
 int main()
 {
-	int port = 8080;
+	int port = 22506;
 	printf("Starting server on port %d...\n", port);
 	if (server.Start(port))
 	{
