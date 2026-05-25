@@ -1,0 +1,72 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpotiVol", "SpotiVol\SpotiVol.vcxproj", "{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A17A510C-9491-4904-B5E8-4F3262D5D645} = {A17A510C-9491-4904-B5E8-4F3262D5D645}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SpotiVolClient", "SpotiVolClient\SpotiVolClient.vcxproj", "{C3C82794-20FC-49A7-85D3-FDE08E85745B}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A17A510C-9491-4904-B5E8-4F3262D5D645} = {A17A510C-9491-4904-B5E8-4F3262D5D645}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SVNet", "SVNet\SVNet.vcxproj", "{A17A510C-9491-4904-B5E8-4F3262D5D645}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Dependencies", "Dependencies", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ImGui", "Dependencies\ImGui\ImGui.vcxproj", "{C0FF640D-2C14-8DBE-F595-301E616989EF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Debug|x64.ActiveCfg = Debug|x64
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Debug|x64.Build.0 = Debug|x64
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Debug|x86.ActiveCfg = Debug|Win32
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Debug|x86.Build.0 = Debug|Win32
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Release|x64.ActiveCfg = Release|x64
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Release|x64.Build.0 = Release|x64
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Release|x86.ActiveCfg = Release|Win32
+		{F1E5DEDC-6AFE-4DCF-93BB-98CD593246AE}.Release|x86.Build.0 = Release|Win32
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Debug|x64.ActiveCfg = Debug|x64
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Debug|x64.Build.0 = Debug|x64
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Debug|x86.ActiveCfg = Debug|Win32
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Debug|x86.Build.0 = Debug|Win32
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Release|x64.ActiveCfg = Release|x64
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Release|x64.Build.0 = Release|x64
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Release|x86.ActiveCfg = Release|Win32
+		{C3C82794-20FC-49A7-85D3-FDE08E85745B}.Release|x86.Build.0 = Release|Win32
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Debug|x64.ActiveCfg = Debug|x64
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Debug|x64.Build.0 = Debug|x64
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Debug|x86.ActiveCfg = Debug|Win32
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Debug|x86.Build.0 = Debug|Win32
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Release|x64.ActiveCfg = Release|x64
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Release|x64.Build.0 = Release|x64
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Release|x86.ActiveCfg = Release|Win32
+		{A17A510C-9491-4904-B5E8-4F3262D5D645}.Release|x86.Build.0 = Release|Win32
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Debug|x64.ActiveCfg = Debug|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Debug|x64.Build.0 = Debug|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Debug|x86.ActiveCfg = Debug|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Debug|x86.Build.0 = Debug|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Release|x64.ActiveCfg = Release|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Release|x64.Build.0 = Release|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Release|x86.ActiveCfg = Release|x64
+		{C0FF640D-2C14-8DBE-F595-301E616989EF}.Release|x86.Build.0 = Release|x64
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C0FF640D-2C14-8DBE-F595-301E616989EF} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {1234BE1F-9E6F-4463-8D6A-DDD3742FD030}
+	EndGlobalSection
+EndGlobal
