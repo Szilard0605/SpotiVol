@@ -12,14 +12,14 @@ SVClient::SVClient()
 	WSADATA wsaData;
 	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
 	{
-		printf("WSAStartup failed with error: %d\n", WSAGetLastError());
+		//printf("WSAStartup failed with error: %d\n", WSAGetLastError());
 		return;
 	}
 
 	m_Socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (m_Socket == INVALID_SOCKET)
 	{
-		printf("socket creation failed with error: %d\n", WSAGetLastError());
+		//printf("socket creation failed with error: %d\n", WSAGetLastError());
 		WSACleanup();
 		return;
 	}
@@ -27,7 +27,7 @@ SVClient::SVClient()
 	u_long iMode = 1;
 	if (ioctlsocket(m_Socket, FIONBIO, &iMode) == SOCKET_ERROR)
 	{
-		printf("ioctlsocket failed\n");
+		//printf("ioctlsocket failed\n");
 	}
 
 }
@@ -59,7 +59,7 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 		int err = WSAGetLastError();
 		if (err != WSAEWOULDBLOCK)
 		{
-			printf("Unable to connect to server: %d\n", err);
+			//printf("Unable to connect to server: %d\n", err);
 			closesocket(m_Socket);
 			m_Socket = INVALID_SOCKET;
 			return;
@@ -80,14 +80,14 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 
 	if (selectResult == SOCKET_ERROR)
 	{
-		printf("Select error: %d\n", WSAGetLastError());
+		//printf("Select error: %d\n", WSAGetLastError());
 		closesocket(m_Socket);
 		m_Socket = INVALID_SOCKET;
 		return;
 	}
 	else if (selectResult == 0)
 	{
-		printf("Timeout: Server is not responding.\n");
+		//printf("Timeout: Server is not responding.\n");
 		closesocket(m_Socket);
 		m_Socket = INVALID_SOCKET;
 		return;
@@ -95,7 +95,7 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 
 	if (FD_ISSET(m_Socket, &errFds))
 	{
-		printf("Connection error: The server may not be running.\n");
+		//printf("Connection error: The server may not be running.\n");
 		closesocket(m_Socket);
 		m_Socket = INVALID_SOCKET;
 		return;
@@ -154,13 +154,13 @@ void SVClient::Update()
 
 			if (header.type == PacketIdentifier::VolumeChange)
 			{
-				printf("Received volume change packet from server\n");
+				//printf("Received volume change packet from server\n");
 
 				if (header.dataSize == sizeof(float))
 				{
 					float volumeLevel;
 					memcpy(&volumeLevel, payload.data(), sizeof(float));
-					printf("Volume level from server: %.2f\n", volumeLevel);
+					//printf("Volume level from server: %.2f\n", volumeLevel);
 					if (m_OnVolumeChangeCallback)
 						m_OnVolumeChangeCallback(volumeLevel);
 				}
@@ -174,7 +174,7 @@ void SVClient::Update()
 	}
 	else if (bytesReceived == 0)
 	{
-		printf("Connection closed by server.\n");
+		//printf("Connection closed by server.\n");
 		Disconnect();
 	}
 
@@ -189,7 +189,7 @@ bool SVClient::SendPacketToServer(Packet& packet)
 	int sendResult = send(m_Socket, reinterpret_cast<const char*>(&header), sizeof(header), 0);
 	if (sendResult == SOCKET_ERROR)
 	{
-		printf("Failed to send packet header: %d\n", WSAGetLastError());
+		//printf("Failed to send packet header: %d\n", WSAGetLastError());
 		Disconnect();
 		return false;
 	}
@@ -197,7 +197,7 @@ bool SVClient::SendPacketToServer(Packet& packet)
 	sendResult = send(m_Socket, reinterpret_cast<const char*>(packet.data.data()), packet.data.size(), 0);
 	if (sendResult == SOCKET_ERROR)
 	{
-		printf("Failed to send packet data: %d\n", WSAGetLastError());
+		//printf("Failed to send packet data: %d\n", WSAGetLastError());
 		Disconnect();
 		return false;
 	}

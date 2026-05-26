@@ -13,6 +13,7 @@ struct ApplicationInfo
 
 	std::string configFilePath = "config.ini";
 	std::string serverIPAddress = "127.0.0.1";
+	uint16_t serverPort = 22506;
 };;
 
 class Application

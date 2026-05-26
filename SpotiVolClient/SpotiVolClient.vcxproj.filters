@@ -34,5 +34,8 @@
     <ClInclude Include="Application.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="Logger.h">
+      <Filter>src</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

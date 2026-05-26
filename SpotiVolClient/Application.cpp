@@ -3,6 +3,7 @@
 #include "SVClient.h"
 #include "UI.h"
 #include "PacketIdentifiers.h"
+#include "Logger.h"
 
 #include <Lmcons.h>
 #include <fstream>
@@ -16,12 +17,15 @@ Application::~Application() { }
 
 void Application::Run()
 {
+	Logger::Init();
 	ReadConfigFile();
 
 	m_Window.Initialize(m_AppInfo.name, m_AppInfo.width, m_AppInfo.height);
 
 	UI::SetOnVolumeChangeCallback([this](float volumeLevel) { OnUIVolumeChange(volumeLevel); });
 	m_Client.SetOnVolumeChangeCallback([this](float volumeLevel) { OnServerVolumeChange(volumeLevel); });
+
+	Logger::Info("Attempting to connect to server at {}:{}\n", m_AppInfo.serverIPAddress.c_str(), m_AppInfo.serverPort);
 
 	char username[UNLEN + 1];
 	DWORD size = UNLEN + 1;
@@ -60,9 +64,26 @@ void Application::ReadConfigFile()
 	std::string line;
 	while (std::getline(configFile, line))
 	{
-		if (line.rfind("serverIP=", 0) == 0)
+		if (line.rfind("HostAddres=", 0) == 0)
 		{
-			m_AppInfo.serverIPAddress = line.substr(9);
+			m_AppInfo.serverIPAddress = line.substr(11);
+			Logger::Info("Set server IP address to %s from config file\n", m_AppInfo.serverIPAddress.c_str());
+		}
+		else
+		{
+			Logger::Error("Unknown config entry in config file: {}\n", line.c_str());
+		}
+		
+		if (line.rfind("HostPort=", 0) == 0)
+		{
+
+			m_AppInfo.serverPort = std::stoi(line.substr(9));
+			Logger::Info("Set server IP address to %s from config file\n", m_AppInfo.serverIPAddress.c_str());
+		}
+		else
+		{
+			Logger::Error("Unknown config entry in config file: {}\n", line.c_str());
+		
 		}
 	}
 }
