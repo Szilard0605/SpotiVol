@@ -13,7 +13,11 @@ Application::Application(ApplicationInfo appInfo)
 {
 }
 
-Application::~Application() { }
+Application::~Application() 
+{
+	m_Window.Destroy();
+	m_Client.Disconnect();
+}
 
 void Application::Run()
 {
@@ -29,21 +33,31 @@ void Application::Run()
 
 	char username[UNLEN + 1];
 	DWORD size = UNLEN + 1;
-	if(GetUserNameA(username, &size))
-		m_Client.Connect(m_AppInfo.serverIPAddress, 22506, username);
-	else
-		m_Client.Connect(m_AppInfo.serverIPAddress, 22506);
+	std::string userName = "Unknown";
+	if (GetUserNameA(username, &size))
+		userName = username;
 
-	while (!m_Client.IsConnected())
+	int connTry = 0;
+
+	while (connTry < 500)
 	{
+		if (!m_Client.IsConnected())
+		{
+			m_Client.Connect(m_AppInfo.serverIPAddress, m_AppInfo.serverPort, userName);
+		}
+		else break;
+
 		m_Window.Update();
 
 		UI::BeginFrame(&m_Window);
 		UI::RenderConnecting();
 		UI::EndFrame();
+
+		connTry++;
 	}
 
-	while (!m_Window.ShouldClose())
+
+	while (!m_Window.ShouldClose() && m_Client.IsConnected())
 	{
 		m_Client.Update();
 		m_Window.Update();
@@ -53,6 +67,9 @@ void Application::Run()
 		UI::RenderConnected();
 		UI::EndFrame();
 	}
+
+	m_Window.Destroy();
+	m_Client.Disconnect();
 }
 
 void Application::ReadConfigFile()
@@ -64,10 +81,11 @@ void Application::ReadConfigFile()
 	std::string line;
 	while (std::getline(configFile, line))
 	{
-		if (line.rfind("HostAddres=", 0) == 0)
+		if (line.rfind("HostAddress=", 0) == 0)
 		{
-			m_AppInfo.serverIPAddress = line.substr(11);
-			Logger::Info("Set server IP address to %s from config file\n", m_AppInfo.serverIPAddress.c_str());
+			m_AppInfo.serverIPAddress = line.substr(12);
+			Logger::Info("Set server IP address to {} from config file\n", m_AppInfo.serverIPAddress.c_str());
+			continue;
 		}
 		else
 		{
@@ -76,9 +94,9 @@ void Application::ReadConfigFile()
 		
 		if (line.rfind("HostPort=", 0) == 0)
 		{
-
 			m_AppInfo.serverPort = std::stoi(line.substr(9));
-			Logger::Info("Set server IP address to %s from config file\n", m_AppInfo.serverIPAddress.c_str());
+			Logger::Info("Set server IP address to {} from config file\n", m_AppInfo.serverIPAddress.c_str());
+			continue;
 		}
 		else
 		{

@@ -1,0 +1,4 @@
+[2026/06/03 15:05:52][INFO] Set server IP address to 10.32.254.74 from config file
+[2026/06/03 15:05:52][ERROR] Unknown config entry in config file: HostPort=8000
+[2026/06/03 15:05:52][INFO] Set server IP address to 10.32.254.74 from config file
+[2026/06/03 15:05:52][INFO] Attempting to connect to server at 10.32.254.74:8000

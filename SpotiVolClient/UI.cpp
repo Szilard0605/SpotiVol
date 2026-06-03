@@ -46,8 +46,10 @@ void UI::RenderConnected()
 	ImGui::TextColored(ImVec4(0,1,0,1), "Connected");
 
 	const ImVec2 sliderSize = { 30.0f, 120.0f };
-	const ImVec2 regionAvail = ImGui::GetContentRegionAvail();
-	ImVec2 pos = { regionAvail.x * 0.5f - sliderSize.x / 2, regionAvail.y * 0.5f - sliderSize.y * 0.5f};
+	float windowWidth = s_Window->GetWindowWidth();
+	float windowHeight = s_Window->GetWindowHeight();
+	const ImVec2 regionAvail = ImVec2(windowWidth, windowHeight);
+	ImVec2 pos = { regionAvail.x * 0.5f - sliderSize.x * 0.5f, regionAvail.y * 0.5f - sliderSize.y * 0.5f - 15.0f};
 	ImGui::SetCursorPos(pos);
 	if(ImGui::VSliderFloat("##VolumeSlider", sliderSize, &s_VolumeLevel, 0.0f, 1.0f, ""))
 	{
@@ -57,7 +59,7 @@ void UI::RenderConnected()
 
 	// Close button
 	ImVec2 closeBttnSize = { 80.0f, 30.0f };
-	float closeBttnPaddingY = 5.0f;
+	float closeBttnPaddingY = 20.0f;
 
 	float centerX = regionAvail.x * 0.5f - closeBttnSize.x * 0.5f;
 	float centerY = regionAvail.y * 0.5f + sliderSize.y * 0.5f + closeBttnSize.y - closeBttnPaddingY;
@@ -97,6 +99,7 @@ void UI::BeginFrame(Window* window)
 		return;
 
 	s_Window = window;
+
 	window->NewFrame();
 }
 

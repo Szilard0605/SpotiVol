@@ -13,8 +13,11 @@ public:
 	~Window();
 	void Initialize(std::string name, int width, int height);
 	void Update();
+	void Destroy();
 	bool ShouldClose() const { return m_ShouldClose; }
 
+	float GetWindowWidth() { return m_Width; }
+	float GetWindowHeight() { return m_Height; }
 
 	void NewFrame();
 	void PresentFrame();

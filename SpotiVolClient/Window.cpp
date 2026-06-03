@@ -1,5 +1,7 @@
 #include "Window.h"
 
+#include "Logger.h"
+
 #include "backends/imgui_impl_win32.cpp"
 #include "backends/imgui_impl_win32.h"
 
@@ -26,6 +28,9 @@ Window::~Window()
 
 void Window::Initialize(std::string name, int width, int height)
 {
+	m_Width = width; 
+	m_Height = height;
+
 	WNDCLASS wc = { 0 };
 	wc.lpfnWndProc = WndProc;
 	wc.hInstance = GetModuleHandle(NULL);
@@ -42,7 +47,7 @@ void Window::Initialize(std::string name, int width, int height)
 
 	if (!m_WindowHandle)
 	{
-		printf("Failed to create window\n");
+		Logger::Error("Failed to create window");
 		return;
 	}
 
@@ -56,7 +61,7 @@ void Window::Initialize(std::string name, int width, int height)
 
 	if (!InitD3D())
 	{
-		printf("Failed to initialize D3D11\n");
+		Logger::Error("Failed to initialize D3D11");
 	}
 
 	ImGui::CreateContext();
@@ -82,6 +87,14 @@ void Window::Update()
 	}
 }
 
+void Window::Destroy()
+{
+	m_ShouldClose = true;
+	CleanupRenderTarget();
+	CleanupD3D();
+	DestroyWindow(m_WindowHandle);
+}
+
 bool Window::InitD3D()
 {
 	HRESULT hr = D3D11CreateDevice(
@@ -99,7 +112,7 @@ bool Window::InitD3D()
 
 	if (FAILED(hr))
 	{
-		printf("Failed to create D3D11 device: %d\n", hr);
+		Logger::Error("Failed to create D3D11 device: {}", hr);
 		return false;
 	}
 
@@ -116,7 +129,7 @@ bool Window::InitD3D()
 
 	if (FAILED(hr))
 	{
-		printf("Couldn't create DXGIFactory\n");
+		Logger::Error("Couldn't create DXGIFactory");
 		return false;
 	}
 
@@ -124,7 +137,7 @@ bool Window::InitD3D()
 
 	if(FAILED(hr))
 	{
-		printf("Couldn't create swap chain\n");
+		Logger::Error("Couldn't create swap chain");
 		return false;
 	}
 
@@ -157,7 +170,7 @@ void Window::CreateRenderTarget()
 
 	if (FAILED(hr))
 	{
-		printf("Couldn't get back buffer\n");
+		Logger::Error("Couldn't get back buffer");
 		return;
 	}
 
@@ -165,7 +178,7 @@ void Window::CreateRenderTarget()
 
 	if (FAILED(hr))
 	{
-		printf("Couldn't create render target view\n");
+		Logger::Error("Couldn't create render target view");
 		return;
 	}
 	m_BackBuffer->Release();
@@ -220,6 +233,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			return HTCLIENT;
 
 		return HTCAPTION;
+	}
+	case WM_QUIT:
+	{
+		Logger::Error("Got quit message");
+		window->Destroy();
 	}
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);
