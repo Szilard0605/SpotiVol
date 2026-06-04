@@ -1,1 +1,1 @@
-"# SpotiVol" 
+![Banner](Branding/Banner.png) 
