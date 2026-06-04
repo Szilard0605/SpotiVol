@@ -2,6 +2,7 @@
 #include <string>
 #include <stdarg.h>
 
+#include <sstream>
 #include <fstream>
 #include <ctime>
 #include <format>
@@ -28,8 +29,14 @@ public:
 			format,
 			std::make_format_args(args...)
 		);
-		s_LogFile << "[" << buffer << "][INFO] " << msg;
+		std::stringstream logMessage;
+		logMessage << "[" << buffer << "][INFO] " << msg << std::endl;
+		s_LogFile << logMessage.str();
 		s_LogFile.flush();
+
+#ifdef _DEBUG
+		printf(logMessage.str().c_str());
+#endif
 	}
 	
 	template<typename... Args>
@@ -43,8 +50,16 @@ public:
 			format,
 			std::make_format_args(args...)
 		);
-		s_LogFile << "[" << buffer << "][WARNING] " << msg;
+		
+		std::stringstream logMessage;
+		logMessage << "[" << buffer << "][WARNING] " << msg << std::endl;
+		s_LogFile << logMessage.str();
 		s_LogFile.flush();
+
+#ifdef _DEBUG
+		printf(logMessage.str().c_str());
+#endif
+
 	}
 	
 	template<typename... Args>
@@ -58,8 +73,13 @@ public:
 			format,
 			std::make_format_args(args...)
 		);
-		s_LogFile << "[" << buffer << "][ERROR] " << msg;
+		std::stringstream logMessage;
+		logMessage << "[" << buffer << "][ERROR] " << msg << std::endl;;
+		s_LogFile << logMessage.str();
 		s_LogFile.flush();
+#ifdef _DEBUG
+		printf(logMessage.str().c_str());
+#endif
 	}
 
 };

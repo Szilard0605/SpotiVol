@@ -278,6 +278,9 @@ bool SVServer::SendPacketToAllClients(Packet& packet)
 {
     for(ServerClientInfo& client : m_ConnectedClients)
     {
+        if (client.id == -1)
+            continue;
+
         if (!SendPacketToClient(client, packet))
         {
             printf("Failed to send packet to client %d\n", client.id);

@@ -30,6 +30,7 @@ public:
 	void CreateRenderTarget();
 	void CleanupRenderTarget();
 private:
+	HICON m_Icon;
 	HWND m_WindowHandle;
 	int m_Width, m_Height;
 	bool m_ShouldClose = false;

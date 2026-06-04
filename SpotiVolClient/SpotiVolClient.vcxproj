@@ -145,8 +145,15 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Logger.h" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="Window.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="SpotiVol_logo.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="SpotiVolClient.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

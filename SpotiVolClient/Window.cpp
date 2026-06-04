@@ -8,6 +8,8 @@
 #include "backends/imgui_impl_dx11.cpp"
 #include "backends/imgui_impl_dx11.h"
 
+#define IDI_APP_ICON 101
+
 extern LRESULT ImGui_ImplWin32_WndProcHandler(
 	HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
@@ -31,11 +33,22 @@ void Window::Initialize(std::string name, int width, int height)
 	m_Width = width; 
 	m_Height = height;
 
-	WNDCLASS wc = { 0 };
+
+	WNDCLASSEX wc = { 0 };
 	wc.lpfnWndProc = WndProc;
 	wc.hInstance = GetModuleHandle(NULL);
 	wc.lpszClassName = L"SpotiVolClientWindowClass";
-	RegisterClass(&wc);
+	wc.cbSize = sizeof(WNDCLASSEX);
+	wc.hIcon = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
+	wc.hIconSm = LoadIcon(wc.hInstance, MAKEINTRESOURCE(IDI_APP_ICON));
+
+	if (wc.hIcon == NULL)
+		Logger::Error("Failed to load icon");
+
+	if (wc.hIconSm == NULL)
+		Logger::Error("Failed to load small icon");
+	
+	RegisterClassEx(&wc);
 	m_WindowHandle = CreateWindowEx(
 		0,
 		wc.lpszClassName,
@@ -70,7 +83,7 @@ void Window::Initialize(std::string name, int width, int height)
 	ImGui_ImplWin32_Init(m_WindowHandle);
 	ImGui_ImplDX11_Init(m_Device, m_DeviceContext);
 
-	printf("Window created, D3D initialized\n");
+	Logger::Info("Window created, D3D initialized");
 }
 
 void Window::Update()
