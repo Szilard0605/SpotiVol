@@ -1,5 +1,5 @@
-[2026/06/04 09:24:39][INFO] Set server IP address to 10.32.254.74 from config file
-[2026/06/04 09:24:39][ERROR] Unknown config entry in config file: HostPort=8000
-[2026/06/04 09:24:39][INFO] Set server IP address to 10.32.254.74 from config file
-[2026/06/04 09:24:39][INFO] Window created, D3D initialized
-[2026/06/04 09:24:39][INFO] Attempting to connect to server at 10.32.254.74:8000
+[2026/06/23 16:24:42][INFO] Set server IP address to 10.32.254.74 from config file
+[2026/06/23 16:24:42][ERROR] Unknown config entry in config file: HostPort=8000
+[2026/06/23 16:24:42][INFO] Set server IP address to 10.32.254.74 from config file
+[2026/06/23 16:24:42][INFO] Window created, D3D initialized
+[2026/06/23 16:24:42][INFO] Attempting to connect to server at 10.32.254.74:8000

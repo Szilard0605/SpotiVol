@@ -5,6 +5,7 @@
 static Window* s_Window = nullptr;
 static float s_VolumeLevel = 0.0f;
 static std::function<void(float)> s_OnVolumeChangeCallback = nullptr;
+static bool s_IsSliderHovered;
 
 void UI::RenderConnecting()
 {
@@ -45,7 +46,7 @@ void UI::RenderConnected()
 	ImGui::Begin("Root", nullptr, flags);
 	ImGui::TextColored(ImVec4(0,1,0,1), "Connected");
 
-	const ImVec2 sliderSize = { 30.0f, 120.0f };
+	const ImVec2 sliderSize = {30.0f, 120.0f};
 	float windowWidth = s_Window->GetWindowWidth();
 	float windowHeight = s_Window->GetWindowHeight();
 	const ImVec2 regionAvail = ImVec2(windowWidth, windowHeight);
@@ -56,6 +57,8 @@ void UI::RenderConnected()
 		if(s_OnVolumeChangeCallback)
 			s_OnVolumeChangeCallback(s_VolumeLevel);
 	}
+
+	s_IsSliderHovered = ImGui::IsItemHovered();
 
 	// Close button
 	ImVec2 closeBttnSize = { 80.0f, 30.0f };
@@ -121,4 +124,14 @@ void UI::SetVolumeLevel(const float level)
 void UI::SetOnVolumeChangeCallback(std::function<void(float)> callback)
 {
 	s_OnVolumeChangeCallback = callback;
+}
+
+void UI::CallOnVolumeChangeCallback(float volumeLevel)
+{
+	s_OnVolumeChangeCallback(volumeLevel);
+}
+
+bool UI::IsSliderHovered()
+{
+	return s_IsSliderHovered;
 }

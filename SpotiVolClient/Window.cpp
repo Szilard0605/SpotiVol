@@ -1,6 +1,10 @@
 #include "Window.h"
 
 #include "Logger.h"
+#include <windowsx.h> 
+#include "UI.h"
+#include "Packet.h"
+#include "PacketIdentifiers.h"
 
 #include "backends/imgui_impl_win32.cpp"
 #include "backends/imgui_impl_win32.h"
@@ -239,7 +243,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		PostQuitMessage(0);
 		return 0;
 
-	// making the window draggable
+		// making the window draggable
 	case WM_NCHITTEST:
 	{
 		if (ImGui::IsAnyItemHovered())
@@ -251,6 +255,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	{
 		Logger::Error("Got quit message");
 		window->Destroy();
+	}
+	case WM_MOUSEWHEEL:
+	{
+		int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+		int xPos = GET_X_LPARAM(lParam);
+		int yPos = GET_Y_LPARAM(lParam);
+
+		float delta = zDelta * 0.0001;
+
+		if (UI::IsSliderHovered())
+		{
+			float vol = UI::GetVolumeLevel();
+			UI::SetVolumeLevel(vol + delta);
+		}
+
+		float volLevel = UI::GetVolumeLevel();
+		UI::CallOnVolumeChangeCallback(volLevel);
+	}
+	case WM_KEYDOWN:
+	{
+	
+		if (GetAsyncKeyState(VK_CONTROL) & 0x8000)
+		{
+
+		}
 	}
 	}
 	return DefWindowProc(hwnd, msg, wParam, lParam);

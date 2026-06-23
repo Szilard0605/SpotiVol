@@ -4,6 +4,7 @@
 
 #include <d3d11.h>
 #include <dxgi1_2.h>
+#include <functional>
 
 class Window
 {
@@ -22,7 +23,7 @@ public:
 	void NewFrame();
 	void PresentFrame();
 
-	ID3D11Device* GetDevice() const { return m_Device; }
+	ID3D11Device* GetDevice() { return m_Device; }
 	ID3D11DeviceContext* GetDeviceContext() const { return m_DeviceContext; }
 	ID3D11RenderTargetView* GetRenderTargetView() const { return m_RenderTargetView; }
 	IDXGISwapChain1* GetSwapChain() const { return m_SwapChain; }
@@ -35,6 +36,7 @@ private:
 	int m_Width, m_Height;
 	bool m_ShouldClose = false;
 
+	std::function<void(bool)> m_MuteCallback;
 private:
 	bool InitD3D();
 

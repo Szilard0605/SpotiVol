@@ -32,8 +32,10 @@ SVServer::~SVServer()
 	WSACleanup();
 }
 
-bool SVServer::Start(uint16_t port)
+bool SVServer::Start(uint16_t port, float initVolume)
 { 
+    m_Volume = initVolume;
+
 	struct addrinfo hints;
 	struct addrinfo* result = nullptr;
 	ZeroMemory(&hints, sizeof(hints));
@@ -216,9 +218,27 @@ void SVServer::Update()
                     {
                         float volumeLevel;
                         memcpy(&volumeLevel, payload.data(), sizeof(float));
+                        printf("Volume change: %f", m_Volume);
+                        m_Volume = volumeLevel;
                         if (m_OnVolumeChangeFn) 
                             m_OnVolumeChangeFn(clientInfo, volumeLevel);
                     }
+                }
+                else if (header.type == PacketIdentifier::Mute)
+                {
+                    m_MutePrevVol = m_Volume;
+                    m_Volume = 0.0f;
+                    printf("Got mute request, prev vol: %f\n", m_MutePrevVol);
+                    if (m_OnVolumeChangeFn)
+                        m_OnVolumeChangeFn(clientInfo, m_Volume);
+                }
+                else if (header.type == PacketIdentifier::Unmute)
+                {
+                    m_Volume = m_MutePrevVol;
+
+                    printf("Got unmute request prev vol: %f\n", m_MutePrevVol);
+                    if (m_OnVolumeChangeFn)
+                        m_OnVolumeChangeFn(clientInfo, m_Volume);
                 }
 
                 clientInfo.dataBuffer.erase(

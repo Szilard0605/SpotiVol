@@ -26,7 +26,7 @@ public:
 	SVServer();
 	~SVServer();
 
-	bool Start(uint16_t port);
+	bool Start(uint16_t port, float initVolume);
 	void Update();
 	void Shutdown();
 
@@ -41,6 +41,8 @@ private:
 	int m_ListenSocket;
 	std::vector<ServerClientInfo> m_ConnectedClients;
 	int m_ConnectedClientCount = 0;
+	float m_Volume = 0.0f;
+	float m_MutePrevVol = 0.0f;
 
 	// callbacks
 	std::function<void(ServerClientInfo&)> m_OnClientConnectFn;

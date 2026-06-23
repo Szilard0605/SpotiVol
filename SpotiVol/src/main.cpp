@@ -57,7 +57,7 @@ int main()
 {
 	int port = 8000;
 	printf("Starting server on port %d...\n", port);
-	if (server.Start(port))
+	if (server.Start(port, VolumeSetter::GetAppVolume(L"Spotify.exe")))
 	{
 		server.SetOnClientConnectCallback(OnClientConnect);
 		server.SetOnClientDisconnectCallback(OnClientDisconnect);

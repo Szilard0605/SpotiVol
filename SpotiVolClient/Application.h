@@ -27,9 +27,13 @@ private:
 	Window m_Window;
 	SVClient m_Client;
 
+	bool m_Muted = false;
+	bool m_IsKeyMDown = false;
+
 	void ReadConfigFile();
 
 	void OnUIVolumeChange(float volumeLevel);
 	void OnServerVolumeChange(float volumeLevel);
+	void OnMuteRequest(bool mute);
 };
 

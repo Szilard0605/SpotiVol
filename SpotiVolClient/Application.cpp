@@ -7,6 +7,9 @@
 
 #include <Lmcons.h>
 #include <fstream>
+#include <chrono>
+
+static bool s_UIInit = false;
 
 Application::Application(ApplicationInfo appInfo)
 	: m_AppInfo(appInfo)
@@ -25,7 +28,6 @@ void Application::Run()
 	ReadConfigFile();
 
 	m_Window.Initialize(m_AppInfo.name, m_AppInfo.width, m_AppInfo.height);
-
 	UI::SetOnVolumeChangeCallback([this](float volumeLevel) { OnUIVolumeChange(volumeLevel); });
 	m_Client.SetOnVolumeChangeCallback([this](float volumeLevel) { OnServerVolumeChange(volumeLevel); });
 
@@ -57,11 +59,29 @@ void Application::Run()
 	}
 
 
+	auto lastCheck = std::chrono::steady_clock::now();
+	const std::chrono::milliseconds checkInterval(20);
+
 	while (!m_Window.ShouldClose() && m_Client.IsConnected())
 	{
 		m_Client.Update();
 		m_Window.Update();
 
+		auto now = std::chrono::steady_clock::now();
+		if (now - lastCheck >= checkInterval) 
+		{
+			lastCheck = now;
+
+			bool isCtrlDown = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+			bool isMDown = (GetAsyncKeyState(0x4D) & 0x8000) != 0;
+
+			if (isCtrlDown && isMDown && !m_IsKeyMDown) 
+			{
+				m_Muted = !m_Muted;
+				OnMuteRequest(m_Muted);
+			}
+			m_IsKeyMDown = isMDown;
+		}
 		UI::BeginFrame(&m_Window);
 		UI::RenderWindowOutline();
 		UI::RenderConnected();
@@ -123,4 +143,19 @@ void Application::OnUIVolumeChange(float volumeLevel)
 void Application::OnServerVolumeChange(float volumeLevel)
 {
 	UI::SetVolumeLevel(volumeLevel);
+}
+
+void Application::OnMuteRequest(bool mute)
+{
+	Packet packet;
+	packet.header.dataSize = 0;
+	if (mute)
+	{
+		packet.header.type = PacketIdentifier::Mute;
+	}
+	else
+	{
+		packet.header.type = PacketIdentifier::Unmute;
+	}
+	m_Client.SendPacketToServer(packet);
 }
