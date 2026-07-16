@@ -3,6 +3,12 @@
 
 #include "PacketIdentifiers.h"
 
+#include "TrayApplication.h"
+
+#include <windows.h>
+#include <iostream>
+#include <cstdio>
+
 SVServer server;
 
 void OnClientConnect(ServerClientInfo& clientInfo)
@@ -53,12 +59,35 @@ void OnUIVolumeChange(ServerClientInfo& clientInfo, float volumeLevel)
 	}
 }
 
+#ifdef _DEBUG
 int main()
 {
+#else
+int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+#endif
+{	
+	if (AllocConsole()) 
+	{
+		FILE* fpOut;
+		freopen_s(&fpOut, "CONOUT$", "w", stdout);
+
+		FILE* fpIn;
+		freopen_s(&fpIn, "CONIN$", "r", stdin);
+
+		FILE* fpErr;
+		freopen_s(&fpErr, "CONOUT$", "w", stderr);
+
+		std::ios::sync_with_stdio();
+	}
+
+
 	int port = 8000;
 	printf("Starting server on port %d...\n", port);
 	if (server.Start(port, VolumeSetter::GetAppVolume(L"Spotify.exe")))
 	{
+		HWND hConsole = GetConsoleWindow();
+		TrayApplication trayApp(L"SpotiVolServer", hConsole);
+
 		server.SetOnClientConnectCallback(OnClientConnect);
 		server.SetOnClientDisconnectCallback(OnClientDisconnect);
 		server.SetOnVolumeChangeCallback(OnUIVolumeChange);

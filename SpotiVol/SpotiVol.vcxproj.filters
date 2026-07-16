@@ -17,10 +17,14 @@
     <ClCompile Include="src\VolumeSetter.cpp">
       <Filter>src</Filter>
     </ClCompile>
+    <ClCompile Include="src\TrayApplication.cpp">
+      <Filter>src</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\VolumeSetter.h">
       <Filter>src</Filter>
     </ClInclude>
+    <ClInclude Include="src\TrayApplication.h" />
   </ItemGroup>
 </Project>
