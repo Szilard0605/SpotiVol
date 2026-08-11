@@ -22,9 +22,7 @@ private:
 	NOTIFYICONDATA m_IconData = { 0 };
 	std::thread m_MessageLoopThread;
 	bool m_Running = true;
-	bool Hidden = false;
 
-	// Standard Win32 Window Procedure for our custom hidden window
 	static LRESULT CALLBACK HiddenWindowProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	void MessageLoop();
 };

@@ -26,8 +26,16 @@ void OnClientConnect(ServerClientInfo& clientInfo)
 	);
 
 	server.SendPacketToAllClients(packet);
-
 	printf("Sent initial volume level %.2f to client %s\n", volumeLevel, clientInfo.name.c_str());
+
+	std::vector<ServerClientInfo> clients = server.GetConnectedClients();
+	printf("------------------------\
+	\nConnected clients:\n");
+	for (auto client : clients)
+	{
+		printf("[%d]: %s\n", client.id, client.name.c_str());
+	}
+	printf("------------------------\n");
 }
 
 void OnClientDisconnect(ServerClientInfo& clientInfo)
@@ -59,13 +67,14 @@ void OnUIVolumeChange(ServerClientInfo& clientInfo, float volumeLevel)
 	}
 }
 
-#ifdef _DEBUG
+#if defined(_DEBUG) || defined(DEBUG)
 int main()
 {
 #else
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+{
 #endif
-{	
+	
 	if (AllocConsole()) 
 	{
 		FILE* fpOut;
@@ -86,6 +95,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 	if (server.Start(port, VolumeSetter::GetAppVolume(L"Spotify.exe")))
 	{
 		HWND hConsole = GetConsoleWindow();
+		ShowWindow(hConsole, SW_SHOW);
 		TrayApplication trayApp(L"SpotiVolServer", hConsole);
 
 		server.SetOnClientConnectCallback(OnClientConnect);

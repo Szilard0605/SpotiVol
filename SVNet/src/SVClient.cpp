@@ -6,7 +6,6 @@
 #include <print>
 #include <windows.h>
 #include <ws2tcpip.h>
-
 SVClient::SVClient()
 {
 	WSADATA wsaData;
@@ -43,6 +42,19 @@ SVClient::~SVClient()
 
 void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 {
+	if (m_Socket == INVALID_SOCKET)
+	{
+		m_Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (m_Socket == INVALID_SOCKET) 
+		{
+			printf("Socket creation failed: %d\n", WSAGetLastError());
+			return;
+		}
+
+		// If you are using non-blocking sockets (implied by WSAEWOULDBLOCK check):
+		u_long mode = 1;
+		ioctlsocket(m_Socket, FIONBIO, &mode);
+	}
 
 	SOCKADDR_IN addr;
 
@@ -59,7 +71,7 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 		int err = WSAGetLastError();
 		if (err != WSAEWOULDBLOCK)
 		{
-			//printf("Unable to connect to server: %d\n", err);
+			printf("Unable to connect to server: %d\n", err);
 			closesocket(m_Socket);
 			m_Socket = INVALID_SOCKET;
 			return;
@@ -73,7 +85,7 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 	FD_SET(m_Socket, &errFds);
 
 	timeval timeout;
-	timeout.tv_sec = 3;
+	timeout.tv_sec = 0;
 	timeout.tv_usec = 0;
 
 	int selectResult = select(0, nullptr, &writeFds, &errFds, &timeout);
@@ -88,8 +100,8 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 	else if (selectResult == 0)
 	{
 		//printf("Timeout: Server is not responding.\n");
-		closesocket(m_Socket);
-		m_Socket = INVALID_SOCKET;
+		//closesocket(m_Socket);
+		//m_Socket = INVALID_SOCKET;
 		return;
 	}
 
@@ -105,7 +117,7 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 	{
 		m_IsConnected = true;
 
-		size_t len = strlen(name.c_str());
+		size_t len = name.length();
 		Packet packet;
 		packet.header.type = PacketIdentifier::ClientName;
 		packet.header.dataSize = len * sizeof(char);
@@ -118,12 +130,15 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 		SendPacketToServer(packet);
 		return;
 	}
+
+	m_IsConnected = true;
 }
 
 void SVClient::Disconnect()
 {
+	m_IsConnected = false;
 	closesocket(m_Socket);
-	WSACleanup();
+	//WSACleanup();
 }
 
 void SVClient::Update()
@@ -164,6 +179,11 @@ void SVClient::Update()
 					if (m_OnVolumeChangeCallback)
 						m_OnVolumeChangeCallback(volumeLevel);
 				}
+			}
+			else if (header.type == PacketIdentifier::Ping)
+			{
+				if (m_ServerPingReceivedCallback)
+					m_ServerPingReceivedCallback();
 			}
 			m_DataBuffer.erase(
 				m_DataBuffer.begin(),

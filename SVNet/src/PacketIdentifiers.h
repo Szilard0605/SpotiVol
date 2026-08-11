@@ -8,5 +8,7 @@ enum PacketIdentifier : uint8_t
 	ClientName = 1,
 	VolumeChange = 2,
 	Mute = 3,
-	Unmute = 4
+	Unmute = 4,
+	IntroduceClient = 5,
+	Ping = 6
 };

@@ -10,6 +10,7 @@ public:
 	static void BeginFrame(Window* window);
 	static void RenderConnecting();
 	static void RenderConnected();
+	static void RenderClientList();
 	static void RenderWindowOutline();
 	static void EndFrame();
 

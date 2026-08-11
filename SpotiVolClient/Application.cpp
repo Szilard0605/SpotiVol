@@ -7,7 +7,6 @@
 
 #include <Lmcons.h>
 #include <fstream>
-#include <chrono>
 
 static bool s_UIInit = false;
 
@@ -30,6 +29,7 @@ void Application::Run()
 	m_Window.Initialize(m_AppInfo.name, m_AppInfo.width, m_AppInfo.height);
 	UI::SetOnVolumeChangeCallback([this](float volumeLevel) { OnUIVolumeChange(volumeLevel); });
 	m_Client.SetOnVolumeChangeCallback([this](float volumeLevel) { OnServerVolumeChange(volumeLevel); });
+	m_Client.SetServerPingReceivedCallback([this]() { OnServerPing(); });
 
 	Logger::Info("Attempting to connect to server at {}:{}", m_AppInfo.serverIPAddress.c_str(), m_AppInfo.serverPort);
 
@@ -39,53 +39,83 @@ void Application::Run()
 	if (GetUserNameA(username, &size))
 		userName = username;
 
-	int connTry = 0;
-
-	while (connTry < 500)
-	{
-		if (!m_Client.IsConnected())
-		{
-			m_Client.Connect(m_AppInfo.serverIPAddress, m_AppInfo.serverPort, userName);
-		}
-		else break;
-
-		m_Window.Update();
-
-		UI::BeginFrame(&m_Window);
-		UI::RenderConnecting();
-		UI::EndFrame();
-
-		connTry++;
-	}
-
+	auto lastConnectTry = std::chrono::steady_clock::now();
+	const std::chrono::milliseconds connTryInterval(500);
 
 	auto lastCheck = std::chrono::steady_clock::now();
 	const std::chrono::milliseconds checkInterval(20);
 
-	while (!m_Window.ShouldClose() && m_Client.IsConnected())
+
+	auto lastPing = std::chrono::steady_clock::now();
+	const std::chrono::milliseconds pingInterval(3000);
+
+	m_lastServerPing = lastPing;
+
+	while (!m_Window.ShouldClose())
 	{
-		m_Client.Update();
 		m_Window.Update();
 
-		auto now = std::chrono::steady_clock::now();
-		if (now - lastCheck >= checkInterval) 
+		if (m_Client.IsConnected())
 		{
-			lastCheck = now;
+			auto now = std::chrono::steady_clock::now();
 
-			bool isCtrlDown = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-			bool isMDown = (GetAsyncKeyState(0x4D) & 0x8000) != 0;
-
-			if (isCtrlDown && isMDown && !m_IsKeyMDown) 
+			if (now - m_lastServerPing >= std::chrono::milliseconds(6000))
 			{
-				m_Muted = !m_Muted;
-				OnMuteRequest(m_Muted);
+				Logger::Error("No response from server since 6 seconds, trying to reconnect...");
+				m_Client.Disconnect();
+				m_lastServerPing = now;
 			}
-			m_IsKeyMDown = isMDown;
+
+			// mute shortcut
+			if (now - lastCheck >= checkInterval)
+			{
+				lastCheck = now;
+
+				bool isCtrlDown = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
+				bool isMDown = (GetAsyncKeyState(0x4D) & 0x8000) != 0;
+
+				if (isCtrlDown && isMDown && !m_IsKeyMDown)
+				{
+					m_Muted = !m_Muted;
+					OnMuteRequest(m_Muted);
+				}
+				m_IsKeyMDown = isMDown;
+			}
+
+			// ping server
+			if (now - lastPing >= pingInterval)
+			{
+				lastPing = now;
+
+				Packet packet;
+				packet.header.type = PacketIdentifier::Ping;
+				packet.header.dataSize = 0;
+
+				Logger::Info("Pinging server...");
+
+				m_Client.SendPacketToServer(packet);
+			}
+
+			m_Client.Update();
+
+			UI::BeginFrame(&m_Window);
+			UI::RenderWindowOutline();
+			UI::RenderConnected();
+			UI::RenderClientList();
+			UI::EndFrame();
 		}
-		UI::BeginFrame(&m_Window);
-		UI::RenderWindowOutline();
-		UI::RenderConnected();
-		UI::EndFrame();
+		else
+		{
+			auto now = std::chrono::steady_clock::now();
+
+			Logger::Info("Attempting connect....");
+			lastConnectTry = now;
+			m_Client.Connect(m_AppInfo.serverIPAddress, m_AppInfo.serverPort, userName);
+		
+			UI::BeginFrame(&m_Window);
+			UI::RenderConnecting();
+			UI::EndFrame();
+		}
 	}
 
 	m_Window.Destroy();
@@ -158,4 +188,10 @@ void Application::OnMuteRequest(bool mute)
 		packet.header.type = PacketIdentifier::Unmute;
 	}
 	m_Client.SendPacketToServer(packet);
+}
+
+void Application::OnServerPing()
+{
+	Logger::Info("Received ping answer from server");
+	m_lastServerPing = std::chrono::steady_clock::now();
 }

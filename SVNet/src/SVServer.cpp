@@ -218,7 +218,6 @@ void SVServer::Update()
                     {
                         float volumeLevel;
                         memcpy(&volumeLevel, payload.data(), sizeof(float));
-                        printf("Volume change: %f", m_Volume);
                         m_Volume = volumeLevel;
                         if (m_OnVolumeChangeFn) 
                             m_OnVolumeChangeFn(clientInfo, volumeLevel);
@@ -239,6 +238,15 @@ void SVServer::Update()
                     printf("Got unmute request prev vol: %f\n", m_MutePrevVol);
                     if (m_OnVolumeChangeFn)
                         m_OnVolumeChangeFn(clientInfo, m_Volume);
+                }
+                else if (header.type == PacketIdentifier::Ping)
+                {
+                    Packet packet;
+                    
+                    packet.header.type = PacketIdentifier::Ping;
+                    packet.header.dataSize = 0;
+
+                    SendPacketToClient(clientInfo, packet);
                 }
 
                 clientInfo.dataBuffer.erase(

@@ -77,6 +77,38 @@ void UI::RenderConnected()
 
 }
 
+void UI::RenderClientList()
+{
+	ImGuiWindowFlags flags =
+		ImGuiWindowFlags_NoTitleBar |
+		ImGuiWindowFlags_NoResize |
+		ImGuiWindowFlags_NoMove |
+		ImGuiWindowFlags_NoCollapse |
+		ImGuiWindowFlags_NoBringToFrontOnFocus |
+		ImGuiWindowFlags_NoBackground |
+		ImGuiWindowFlags_NoScrollbar |
+		ImGuiWindowFlags_NoSavedSettings;
+
+
+
+
+	float windowWidth = s_Window->GetWindowWidth();
+	float windowHeight = s_Window->GetWindowHeight();
+
+	float marginRight = 25.0;
+	float marginTop = 0.0;
+
+	ImVec2 windowPos = { windowWidth - marginRight, marginTop};
+	
+	ImGui::SetNextWindowPos(windowPos);
+	ImGui::Begin("Connected clients", (bool*)1, flags);
+
+	ImGui::Text("C");
+
+
+	ImGui::End();
+}
+
 void UI::RenderWindowOutline()
 {
 	ImDrawList* draw = ImGui::GetForegroundDrawList();

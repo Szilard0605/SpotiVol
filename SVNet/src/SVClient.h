@@ -19,11 +19,13 @@ public:
 	bool IsConnected() const { return m_IsConnected; }
 
 	void SetOnVolumeChangeCallback(std::function<void(float)> callback) { m_OnVolumeChangeCallback = callback; }
+	void SetServerPingReceivedCallback(std::function<void(void)> callback) { m_ServerPingReceivedCallback = callback; }
 private:
 	unsigned __int64 m_Socket = ~0;
 	bool m_IsConnected = false;
 
 	std::function<void(float volume)> m_OnVolumeChangeCallback;
+	std::function<void(void)> m_ServerPingReceivedCallback;
 
 	std::vector<uint8_t> m_DataBuffer;
 };

@@ -37,6 +37,8 @@ public:
 	void SetOnClientConnectCallback(std::function<void(ServerClientInfo&)> callback) { m_OnClientConnectFn = callback; }
 	void SetOnClientDisconnectCallback(std::function<void(ServerClientInfo&)> callback) { m_OnClientDisconnectFn = callback; }
 	void SetOnVolumeChangeCallback(std::function<void(ServerClientInfo&, float)> callback) { m_OnVolumeChangeFn = callback; }
+
+	std::vector<ServerClientInfo> GetConnectedClients() { return m_ConnectedClients; }
 private:
 	int m_ListenSocket;
 	std::vector<ServerClientInfo> m_ConnectedClients;
