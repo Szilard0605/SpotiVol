@@ -22,13 +22,6 @@ SVClient::SVClient()
 		WSACleanup();
 		return;
 	}
-
-	u_long iMode = 1;
-	if (ioctlsocket(m_Socket, FIONBIO, &iMode) == SOCKET_ERROR)
-	{
-		//printf("ioctlsocket failed\n");
-	}
-
 }
 
 SVClient::~SVClient()
@@ -42,42 +35,67 @@ SVClient::~SVClient()
 
 void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 {
+	if (m_State != ConnectionState::Disconnected)
+		return;
+
+	m_ServerIP = ipAddress;
+	m_ServerPort = port;
+	m_UserName = name;
+
+	m_State = ConnectionState::Connecting;
+
+	if (!StartConnecting())
+		return;
+}
+
+void SVClient::Disconnect()
+{
+	m_IsConnected = false;
+	closesocket(m_Socket);
+	m_Socket = INVALID_SOCKET;
+	m_State = ConnectionState::Disconnected;
+}
+
+bool SVClient::StartConnecting()
+{
+	m_Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
 	if (m_Socket == INVALID_SOCKET)
 	{
-		m_Socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (m_Socket == INVALID_SOCKET) 
-		{
-			printf("Socket creation failed: %d\n", WSAGetLastError());
-			return;
-		}
-
-		// If you are using non-blocking sockets (implied by WSAEWOULDBLOCK check):
-		u_long mode = 1;
-		ioctlsocket(m_Socket, FIONBIO, &mode);
+		printf("Invalid socket\n");
+		return false;
 	}
 
-	SOCKADDR_IN addr;
+	u_long mode = 1;
+	ioctlsocket(m_Socket, FIONBIO, &mode);
 
-	std::wstring wIpAddress(ipAddress.begin(), ipAddress.end());
-	InetPton(AF_INET, wIpAddress.c_str(), &addr.sin_addr.s_addr);
-
+	SOCKADDR_IN addr{};
 	addr.sin_family = AF_INET;
-	addr.sin_port = htons(port);
+	addr.sin_port = htons(m_ServerPort);
 
-	int connectResult = connect(m_Socket, reinterpret_cast<SOCKADDR*>(&addr), sizeof(addr));
+	std::wstring wIp(m_ServerIP.begin(), m_ServerIP.end());
 
-	if (connectResult == SOCKET_ERROR)
-	{
-		int err = WSAGetLastError();
-		if (err != WSAEWOULDBLOCK)
-		{
-			printf("Unable to connect to server: %d\n", err);
-			closesocket(m_Socket);
-			m_Socket = INVALID_SOCKET;
-			return;
-		}
-	}
+	InetPton(AF_INET, wIp.c_str(), &addr.sin_addr);
 
+	int result = connect(m_Socket,
+		reinterpret_cast<SOCKADDR*>(&addr),
+		sizeof(addr));
+
+	if (result == 0)
+		return true;
+
+	int err = WSAGetLastError();
+
+	if (err == WSAEWOULDBLOCK)
+		return true;
+
+	closesocket(m_Socket);
+	m_Socket = INVALID_SOCKET;
+	return false;
+}
+
+void SVClient::UpdateConnecting()
+{
 	fd_set writeFds, errFds;
 	FD_ZERO(&writeFds);
 	FD_ZERO(&errFds);
@@ -92,69 +110,64 @@ void SVClient::Connect(std::string ipAddress, uint16_t port, std::string name)
 
 	if (selectResult == SOCKET_ERROR)
 	{
-		//printf("Select error: %d\n", WSAGetLastError());
-		closesocket(m_Socket);
-		m_Socket = INVALID_SOCKET;
+		Disconnect();
 		return;
 	}
-	else if (selectResult == 0)
-	{
-		//printf("Timeout: Server is not responding.\n");
-		//closesocket(m_Socket);
-		//m_Socket = INVALID_SOCKET;
+	
+	if (selectResult == 0) // still connecting 
 		return;
-	}
 
 	if (FD_ISSET(m_Socket, &errFds))
 	{
-		//printf("Connection error: The server may not be running.\n");
-		closesocket(m_Socket);
-		m_Socket = INVALID_SOCKET;
+		Disconnect();
 		return;
 	}
 
 	if (FD_ISSET(m_Socket, &writeFds))
 	{
-		m_IsConnected = true;
+		int soError = 0;
+		int len = sizeof(soError);
 
-		size_t len = name.length();
+		getsockopt(m_Socket, SOL_SOCKET, SO_ERROR,
+			reinterpret_cast<char*>(&soError), &len);
+
+		if (soError != 0)
+		{
+			printf("Connect failed: %d\n", soError);
+			closesocket(m_Socket);
+			m_Socket = INVALID_SOCKET;
+			return;
+		}
+
+		m_State = ConnectionState::Connected;
+
 		Packet packet;
 		packet.header.type = PacketIdentifier::ClientName;
-		packet.header.dataSize = len * sizeof(char);
+		packet.header.dataSize = m_UserName.length() * sizeof(char);
 
 		packet.data = std::vector<uint8_t>(
-			reinterpret_cast<const uint8_t*>(name.c_str()),
-			reinterpret_cast<const uint8_t*>(name.c_str()) + len
+			reinterpret_cast<const uint8_t*>(m_UserName.c_str()),
+			reinterpret_cast<const uint8_t*>(m_UserName.c_str()) + m_UserName.length()
 		);
 
 		SendPacketToServer(packet);
-		return;
+
+		printf("Connected to server!\n");
 	}
-
-	m_IsConnected = true;
 }
 
-void SVClient::Disconnect()
+void SVClient::UpdateConnected()
 {
-	m_IsConnected = false;
-	closesocket(m_Socket);
-	//WSACleanup();
-}
-
-void SVClient::Update()
-{
-	if (!m_IsConnected)
-		return;
 
 	char recvbuf[1024];
 	int recvbuflen = 1024;
 	int bytesReceived = recv(m_Socket, recvbuf, recvbuflen, 0);
-	
+
 	if (bytesReceived > 0)
 	{
 		m_DataBuffer.insert(m_DataBuffer.end(), recvbuf, recvbuf + bytesReceived);
 
-		while(m_DataBuffer.size() >= sizeof(PacketHeader))
+		while (m_DataBuffer.size() >= sizeof(PacketHeader))
 		{
 			PacketHeader header;
 			memcpy(&header, m_DataBuffer.data(), sizeof(PacketHeader));
@@ -194,10 +207,31 @@ void SVClient::Update()
 	}
 	else if (bytesReceived == 0)
 	{
-		//printf("Connection closed by server.\n");
 		Disconnect();
 	}
+}
 
+void SVClient::Update()
+{
+	switch (m_State)
+	{
+	case ConnectionState::Disconnected:
+	{
+		break;
+	}
+
+	case ConnectionState::Connecting:
+	{
+		UpdateConnecting();
+		break;
+	}
+
+	case ConnectionState::Connected:
+	{
+		UpdateConnected();
+		break;
+	}
+	}
 }
 
 bool SVClient::SendPacketToServer(Packet& packet)

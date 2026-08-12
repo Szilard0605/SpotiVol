@@ -40,7 +40,7 @@ void Application::Run()
 		userName = username;
 
 	auto lastConnectTry = std::chrono::steady_clock::now();
-	const std::chrono::milliseconds connTryInterval(500);
+	const std::chrono::milliseconds connTryInterval(1000);
 
 	auto lastCheck = std::chrono::steady_clock::now();
 	const std::chrono::milliseconds checkInterval(20);
@@ -48,8 +48,6 @@ void Application::Run()
 
 	auto lastPing = std::chrono::steady_clock::now();
 	const std::chrono::milliseconds pingInterval(3000);
-
-	m_lastServerPing = lastPing;
 
 	while (!m_Window.ShouldClose())
 	{
@@ -59,11 +57,11 @@ void Application::Run()
 		{
 			auto now = std::chrono::steady_clock::now();
 
-			if (now - m_lastServerPing >= std::chrono::milliseconds(6000))
+			if (now - m_LastServerPing >= std::chrono::milliseconds(6000))
 			{
 				Logger::Error("No response from server since 6 seconds, trying to reconnect...");
 				m_Client.Disconnect();
-				m_lastServerPing = now;
+				m_LastServerPing = now;
 			}
 
 			// mute shortcut
@@ -106,12 +104,19 @@ void Application::Run()
 		}
 		else
 		{
+			m_Client.Update();
 			auto now = std::chrono::steady_clock::now();
 
-			Logger::Info("Attempting connect....");
-			lastConnectTry = now;
-			m_Client.Connect(m_AppInfo.serverIPAddress, m_AppInfo.serverPort, userName);
-		
+			if (now - lastConnectTry >= connTryInterval)
+			{
+				Logger::Info("Attempting connect....");
+				lastConnectTry = now;
+				m_Client.Connect(m_AppInfo.serverIPAddress, m_AppInfo.serverPort, userName);
+			
+			}
+
+			m_LastServerPing = now;
+
 			UI::BeginFrame(&m_Window);
 			UI::RenderConnecting();
 			UI::EndFrame();
@@ -193,5 +198,5 @@ void Application::OnMuteRequest(bool mute)
 void Application::OnServerPing()
 {
 	Logger::Info("Received ping answer from server");
-	m_lastServerPing = std::chrono::steady_clock::now();
+	m_LastServerPing = std::chrono::steady_clock::now();
 }

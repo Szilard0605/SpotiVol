@@ -2,7 +2,7 @@
 
 #include "Application.h"
 
-#ifndef _DEBUG
+#ifdef _DEBUG
 int main()
 #else
 int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int)

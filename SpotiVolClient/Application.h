@@ -37,7 +37,7 @@ private:
 	Window m_Window;
 	SVClient m_Client;
 
-	std::chrono::steady_clock::time_point m_lastServerPing;
+	std::chrono::steady_clock::time_point m_LastServerPing;
 
 	bool m_Muted = false;
 	bool m_IsKeyMDown = false;
