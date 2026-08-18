@@ -3,3 +3,7 @@ x64
 SpotiVol/x64
 SpotiVolClient/x64
 SVNet/x64
+build/
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user

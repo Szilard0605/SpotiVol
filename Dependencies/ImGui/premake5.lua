@@ -27,11 +27,6 @@ project "ImGui"
 
         "misc/cpp/imgui_stdlib.h",
         "misc/cpp/imgui_stdlib.cpp",
-	
-	"backends/imgui_impl_dx11.cpp",
-	"backends/imgui_impl_dx11.h",
-	"backends/imgui_impl_glfw.cpp",
-	"backends/imgui_impl_glfw.h"
     }
 
     includedirs { "%{prj.location}" }

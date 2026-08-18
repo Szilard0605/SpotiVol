@@ -1,0 +1,10 @@
+﻿  SVClient.cpp
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\print(11): warning STL4038: The contents of <print> are available only with C++23 or later.
+C:\Users\User\Desktop\Projects\SpotiVol\Dependencies\SVNet\src\SVClient.cpp(146,48): warning C4267: '=': conversion from 'size_t' to 'uint16_t', possible loss of data
+C:\Users\User\Desktop\Projects\SpotiVol\Dependencies\SVNet\src\SVClient.cpp(251,97): warning C4267: 'argument': conversion from 'size_t' to 'int', possible loss of data
+  SVServer.cpp
+C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.44.35207\include\print(11): warning STL4038: The contents of <print> are available only with C++23 or later.
+C:\Users\User\Desktop\Projects\SpotiVol\Dependencies\SVNet\src\SVServer.cpp(56,25): warning C4244: '=': conversion from 'SOCKET' to 'int', possible loss of data
+  Generating Code...
+C:\Users\User\Desktop\Projects\SpotiVol\Dependencies\SVNet\src\SVServer.cpp(318,1): warning C4715: 'SVServer::SendPacketToAllClients': not all control paths return a value
+  SVNet.vcxproj -> C:\Users\User\Desktop\Projects\SpotiVol\build\SVNet\Debug-windows-x86_64\SVNet.lib
