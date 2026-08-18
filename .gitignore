@@ -8,18 +8,18 @@ build/
 *.vcxproj.filters
 *.vcxproj.user
 *.obj
- Dependencies/ImGui/lib/Debug/ImGui.tlog/CL.10640.write.1.tlog
- Dependencies/ImGui/lib/Debug/ImGui.tlog/CL.write.1.tlog
- Dependencies/SVNet/obj/Debug/SVClient.obj
- Dependencies/SVNet/obj/Debug/SVNet.Build.CppClean.log
- Dependencies/SVNet/obj/Debug/SVNet.lib.recipe
- Dependencies/SVNet/obj/Debug/SVNet.log
- Dependencies/SVNet/obj/Debug/SVNet.tlog/CL.command.1.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/CL.read.1.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/CL.write.1.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/Cl.items.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/Lib-link.read.1.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/Lib-link.write.1.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/Lib.command.1.tlog
- Dependencies/SVNet/obj/Debug/SVNet.tlog/SVNet.lastbuildstate
- Dependencies/SVNet/obj/Debug/SVServer.obj
+Dependencies/ImGui/lib/Debug/ImGui.tlog/CL.10640.write.1.tlog
+Dependencies/ImGui/lib/Debug/ImGui.tlog/CL.write.1.tlog
+Dependencies/SVNet/obj/Debug/SVClient.obj
+Dependencies/SVNet/obj/Debug/SVNet.Build.CppClean.log
+Dependencies/SVNet/obj/Debug/SVNet.lib.recipe
+Dependencies/SVNet/obj/Debug/SVNet.log
+Dependencies/SVNet/obj/Debug/SVNet.tlog/CL.command.1.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/CL.read.1.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/CL.write.1.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/Cl.items.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/Lib-link.read.1.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/Lib-link.write.1.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/Lib.command.1.tlog
+Dependencies/SVNet/obj/Debug/SVNet.tlog/SVNet.lastbuildstate
+Dependencies/SVNet/obj/Debug/SVServer.obj
