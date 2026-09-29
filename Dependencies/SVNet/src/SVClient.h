@@ -27,6 +27,8 @@ public:
 
 	void SetOnVolumeChangeCallback(std::function<void(float)> callback) { m_OnVolumeChangeCallback = callback; }
 	void SetServerPingReceivedCallback(std::function<void(void)> callback) { m_ServerPingReceivedCallback = callback; }
+	void SetClientConnectCallback(std::function<void(int, std::string)> callback) { m_ClientConnectCallback = callback; }
+	void SetClientDisconnectCallback(std::function<void(int)> callback) {  m_ClientDisconnectCallback = callback; }
 private:
 	bool StartConnecting();
 	void UpdateConnecting();
@@ -41,8 +43,10 @@ private:
 	unsigned __int64 m_Socket = ~0;
 	bool m_IsConnected = false;
 
-	std::function<void(float volume)> m_OnVolumeChangeCallback;
+	std::function<void(float)> m_OnVolumeChangeCallback;
 	std::function<void(void)> m_ServerPingReceivedCallback;
+	std::function<void(int, std::string)> m_ClientConnectCallback;
+	std::function<void(int)> m_ClientDisconnectCallback;
 
 	std::vector<uint8_t> m_DataBuffer;
 };

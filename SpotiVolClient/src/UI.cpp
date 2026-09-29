@@ -77,14 +77,13 @@ void UI::RenderConnected()
 
 }
 
-void UI::RenderClientList()
+void UI::RenderClientList(std::vector<Client>& clients)
 {
 	ImGuiWindowFlags flags =
 		ImGuiWindowFlags_NoTitleBar |
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
 		ImGuiWindowFlags_NoCollapse |
-		ImGuiWindowFlags_NoBringToFrontOnFocus |
 		ImGuiWindowFlags_NoBackground |
 		ImGuiWindowFlags_NoScrollbar |
 		ImGuiWindowFlags_NoSavedSettings;
@@ -95,7 +94,7 @@ void UI::RenderClientList()
 	float windowWidth = s_Window->GetWindowWidth();
 	float windowHeight = s_Window->GetWindowHeight();
 
-	float marginRight = 25.0;
+	float marginRight = ImGui::CalcTextSize("Clients").x * 1.5f;
 	float marginTop = 0.0;
 
 	ImVec2 windowPos = { windowWidth - marginRight, marginTop};
@@ -103,9 +102,37 @@ void UI::RenderClientList()
 	ImGui::SetNextWindowPos(windowPos);
 	ImGui::Begin("Connected clients", (bool*)1, flags);
 
-	ImGui::Text("C");
+	ImGui::Button("Clients");
+	if (ImGui::IsItemHovered())
+	{
+		ImVec2 buttonMin = ImGui::GetItemRectMin();
+		ImVec2 buttonMax = ImGui::GetItemRectMax();
 
+		ImGui::SetNextWindowPos(
+			ImVec2(buttonMin.x, buttonMax.y)
+		);
 
+		ImGui::Begin(
+			"C_Popup",
+			nullptr,
+			ImGuiWindowFlags_NoTitleBar |
+			ImGuiWindowFlags_AlwaysAutoResize |
+			ImGuiWindowFlags_NoMove
+		);
+
+		if (clients.size())
+		{
+			for (auto client : clients)
+			{
+				ImGui::Text("%d: %s", client.id, client.name.c_str());
+			}
+		}
+		else
+		{
+			ImGui::Text("Just you");
+		}
+		ImGui::End();
+	}
 	ImGui::End();
 }
 

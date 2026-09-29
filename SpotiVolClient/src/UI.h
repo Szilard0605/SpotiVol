@@ -2,6 +2,8 @@
 
 #include "Window.h"
 
+#include "Client.h"
+
 #include <functional>
 
 class UI
@@ -10,7 +12,7 @@ public:
 	static void BeginFrame(Window* window);
 	static void RenderConnecting();
 	static void RenderConnected();
-	static void RenderClientList();
+	static void RenderClientList(std::vector<Client>& clients);
 	static void RenderWindowOutline();
 	static void EndFrame();
 

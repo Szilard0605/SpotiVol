@@ -6,7 +6,7 @@
 struct PacketHeader 
 {
 	uint16_t type;
-	uint16_t dataSize; 
+	size_t dataSize; 
 };
 
 struct Packet

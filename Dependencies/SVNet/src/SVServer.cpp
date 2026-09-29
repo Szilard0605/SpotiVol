@@ -7,14 +7,15 @@
 #include <algorithm>
 
 #include "PacketIdentifiers.h"
+#include <forward_list>
 
 SVServer::SVServer()
 {
-	m_ConnectedClients.resize(MAX_CLIENTS); // Pre-allocate client slots
+	m_ClientPool.resize(MAX_CLIENTS); // Pre-allocate client slots
 
     for(int i = 0; i < MAX_CLIENTS; i++)
     {
-        m_ConnectedClients[i].id = -1; // Mark all client slots as available
+        m_ClientPool[i].id = -1; // Mark all client slots as available
 	}
 
 	WSADATA wsaData;
@@ -97,7 +98,7 @@ void SVServer::Update()
     FD_SET(m_ListenSocket, &read_fds);
     SOCKET max_fd = m_ListenSocket;
 
-    for (ServerClientInfo client : m_ConnectedClients)
+    for (ServerClientInfo client : m_ClientPool)
     {
         if(client.id == -1)
 			continue; 
@@ -140,12 +141,12 @@ void SVServer::Update()
 			newClientInfo.ipAddress = clientIP;
 			newClientInfo.port = clientPort;
 
-            for (int i = 0; i < m_ConnectedClients.size(); i++)
+            for (int i = 0; i < m_ClientPool.size(); i++)
             {
-                if (m_ConnectedClients[i].id == -1)
+                if (m_ClientPool[i].id == -1)
                 {
                     newClientInfo.id = i;
-                    m_ConnectedClients[i] = newClientInfo;
+                    m_ClientPool[i] = newClientInfo;
                     m_ConnectedClientCount++;      
                     break;
                 }
@@ -153,9 +154,9 @@ void SVServer::Update()
         }
     }
 
-    for (size_t i = 0; i < m_ConnectedClients.size();)
+    for (size_t i = 0; i < m_ClientPool.size();)
     {
-        ServerClientInfo& clientInfo = m_ConnectedClients[i];
+        ServerClientInfo& clientInfo = m_ClientPool[i];
         bool clientDisconnected = false;
 
         if (FD_ISSET(clientInfo.socket, &read_fds))
@@ -165,28 +166,35 @@ void SVServer::Update()
 
             if (bytesReceived <= 0)
             {
-                if (bytesReceived == 0 && m_OnClientDisconnectFn) 
-                    m_OnClientDisconnectFn(clientInfo);
-            
 				m_ConnectedClientCount--;
 
-                closesocket(clientInfo.socket);
-                
-                for(int i = 0; i < m_ConnectedClients.size(); i++)
+                if (m_OnClientDisconnectFn)
+                    m_OnClientDisconnectFn(clientInfo);
+
+
+                Packet dcPacket;
+                dcPacket.header.type = PacketIdentifier::ClientDisconnect;
+                uint8_t* data = reinterpret_cast<uint8_t*>(&clientInfo.id);
+                dcPacket.data.insert(dcPacket.data.end(), data, data + sizeof(int));
+                SendPacketToAllClients(dcPacket);
+
+                for (int i = 0; i < m_ClientPool.size(); i++)
                 {
-                    if(m_ConnectedClients[i].id == clientInfo.id)
+                    if(m_ClientPool[i].id == clientInfo.id)
                     {
-                        m_ConnectedClients[i].id = -1;
-                        m_ConnectedClients[i].name.clear();
-                        m_ConnectedClients[i].socket = INVALID_SOCKET;
-                        m_ConnectedClients[i].ipAddress.clear();
-                        m_ConnectedClients[i].port = 0;
-                        m_ConnectedClients[i].dataBuffer.clear();
+                        m_ClientPool[i].id = -1;
+                        m_ClientPool[i].name.clear();
+                        m_ClientPool[i].socket = INVALID_SOCKET;
+                        m_ClientPool[i].ipAddress.clear();
+                        m_ClientPool[i].port = 0;
+                        m_ClientPool[i].dataBuffer.clear();
                         break;
                     }
 				}
-                clientDisconnected = true;
 
+
+                closesocket(clientInfo.socket);
+                clientDisconnected = true;
                 return;
             }
 
@@ -209,8 +217,47 @@ void SVServer::Update()
                 {
                     std::string name(reinterpret_cast<const char*>(payload.data()), header.dataSize);
                     clientInfo.name = name;
+
                     if (m_OnClientConnectFn) 
                         m_OnClientConnectFn(clientInfo);
+                
+                    for (auto client : m_ClientPool)
+                    {
+                        //printf("[%d]: %s\n", client.id, client.name.c_str());
+
+                        // Send the connected client to all clients
+                        if (client.id == -1)
+                            continue;
+
+                        {
+                            Packet connectPacket;
+                            connectPacket.header.type = PacketIdentifier::IntroduceClient;
+
+                            const uint8_t* id_bytes = reinterpret_cast<const uint8_t*>(&clientInfo.id);
+                            connectPacket.data.insert(connectPacket.data.end(), id_bytes, id_bytes + sizeof(client.id));
+
+                            const uint8_t* name_bytes = reinterpret_cast<const uint8_t*>(clientInfo.name.data());
+                            connectPacket.data.insert(connectPacket.data.end(), name_bytes, name_bytes + client.name.size());
+                            connectPacket.header.dataSize = connectPacket.data.size();
+
+                            SendPacketToClient(client, connectPacket);
+                        }
+
+                        if (client.id != clientInfo.id)
+                        {
+                            Packet connectPacket;
+                            connectPacket.header.type = PacketIdentifier::IntroduceClient;
+
+                            const uint8_t* id_bytes = reinterpret_cast<const uint8_t*>(&client.id);
+                            connectPacket.data.insert(connectPacket.data.end(), id_bytes, id_bytes + sizeof(client.id));
+
+                            const uint8_t* name_bytes = reinterpret_cast<const uint8_t*>(client.name.data());
+                            connectPacket.data.insert(connectPacket.data.end(), name_bytes, name_bytes + client.name.size());
+                            connectPacket.header.dataSize = connectPacket.data.size();
+
+                            SendPacketToClient(clientInfo, connectPacket);
+                        }
+                    }
                 }
                 else if (header.type == PacketIdentifier::VolumeChange)
                 {
@@ -227,7 +274,6 @@ void SVServer::Update()
                 {
                     m_MutePrevVol = m_Volume;
                     m_Volume = 0.0f;
-                    printf("Got mute request, prev vol: %f\n", m_MutePrevVol);
                     if (m_OnVolumeChangeFn)
                         m_OnVolumeChangeFn(clientInfo, m_Volume);
                 }
@@ -235,7 +281,6 @@ void SVServer::Update()
                 {
                     m_Volume = m_MutePrevVol;
 
-                    printf("Got unmute request prev vol: %f\n", m_MutePrevVol);
                     if (m_OnVolumeChangeFn)
                         m_OnVolumeChangeFn(clientInfo, m_Volume);
                 }
@@ -264,13 +309,24 @@ void SVServer::Update()
 
 void SVServer::Shutdown()
 {
-    for (ServerClientInfo& client : m_ConnectedClients)
+    for (ServerClientInfo& client : m_ClientPool)
     {
         closesocket(client.socket);
     }
-    m_ConnectedClients.clear();
+    m_ClientPool.clear();
 	closesocket(m_ListenSocket);
     WSACleanup();
+}
+
+std::vector<ServerClientInfo> SVServer::GetConnectedClients()
+{
+    std::vector<ServerClientInfo> clients;
+    for (auto client : m_ClientPool)
+    {
+        if (client.id != -1)
+            clients.push_back(client);
+    }
+    return clients;
 }
 
 bool SVServer::SendPacketToClient(ServerClientInfo& client, Packet& packet)
@@ -286,17 +342,20 @@ bool SVServer::SendPacketToClient(ServerClientInfo& client, Packet& packet)
         return false;
 	}
 
-    if (header.dataSize <= 0)
+    /*if (header.dataSize <= 0)
     {
-		printf("No data to send for packet type %d\n", header.type);
+		//printf("No data to send for packet type %d\n", header.type);
         return false;
-    }
+    }*/
 
-    sendResult = send(client.socket, reinterpret_cast<const char*>(packet.data.data()), header.dataSize, 0);
-    if(sendResult == SOCKET_ERROR)
+    if (header.dataSize > 0)
     {
-        printf("Failed to send packet data to client %d. Error: %d\n", client.id, WSAGetLastError());
-        return false;
+        sendResult = send(client.socket, reinterpret_cast<const char*>(packet.data.data()), header.dataSize, 0);
+        if (sendResult == SOCKET_ERROR)
+        {
+            printf("Failed to send packet data to client %d. Error: %d\n", client.id, WSAGetLastError());
+            return false;
+        }
     }
 	
     return true;
@@ -304,7 +363,7 @@ bool SVServer::SendPacketToClient(ServerClientInfo& client, Packet& packet)
 
 bool SVServer::SendPacketToAllClients(Packet& packet)
 {
-    for(ServerClientInfo& client : m_ConnectedClients)
+    for(ServerClientInfo& client : m_ClientPool)
     {
         if (client.id == -1)
             continue;

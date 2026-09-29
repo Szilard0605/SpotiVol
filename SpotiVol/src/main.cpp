@@ -41,6 +41,15 @@ void OnClientConnect(ServerClientInfo& clientInfo)
 void OnClientDisconnect(ServerClientInfo& clientInfo)
 {
 	printf("Client %s disconnected: %s:%d (ID: %d)\n", clientInfo.name.c_str(), clientInfo.ipAddress.c_str(), clientInfo.port, clientInfo.id);
+
+	std::vector<ServerClientInfo> clients = server.GetConnectedClients();
+	printf("------------------------\
+	\nConnected clients:\n");
+	for (auto client : clients)
+	{
+		printf("[%d]: %s\n", client.id, client.name.c_str());
+	}
+	printf("------------------------\n");
 }
 
 void OnUIVolumeChange(ServerClientInfo& clientInfo, float volumeLevel)
@@ -57,14 +66,19 @@ void OnUIVolumeChange(ServerClientInfo& clientInfo, float volumeLevel)
 	
 	server.SendPacketToAllClients(packet);
 
-	if(VolumeSetter::SetAppVolume(L"Spotify.exe", volumeLevel))
-	{
-		printf("Volume for client %s set to %.2f\n", clientInfo.name.c_str(), volumeLevel);
-	}
-	else
+	if(!VolumeSetter::SetAppVolume(L"Spotify.exe", volumeLevel))
 	{
 		printf("Failed to set volume for client %s\n", clientInfo.name.c_str());
 	}
+
+	std::vector<ServerClientInfo> clients = server.GetConnectedClients();
+	printf("------------------------\
+	\nConnected clients:\n");
+	for (auto client : clients)
+	{
+		printf("[%d]: %s\n", client.id, client.name.c_str());
+	}
+	printf("------------------------\n");
 }
 
 #if defined(_DEBUG) || defined(DEBUG)

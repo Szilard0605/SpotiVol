@@ -198,6 +198,28 @@ void SVClient::UpdateConnected()
 				if (m_ServerPingReceivedCallback)
 					m_ServerPingReceivedCallback();
 			}
+			else if (header.type == PacketIdentifier::IntroduceClient)
+			{
+				int id;
+				memcpy(&id, payload.data(), sizeof(int));
+
+				std::string name(
+					reinterpret_cast<const char*>(payload.data() + sizeof(int)),
+					payload.size() - sizeof(int)
+				);
+
+				if (m_ClientConnectCallback)
+					m_ClientConnectCallback(id, name);
+			}
+			else if (header.type == PacketIdentifier::ClientDisconnect)
+			{
+				int id;
+				memcpy(&id, payload.data(), sizeof(int));
+
+				if (m_ClientDisconnectCallback)
+					m_ClientDisconnectCallback(id);
+			}
+
 			m_DataBuffer.erase(
 				m_DataBuffer.begin(),
 				m_DataBuffer.begin() + sizeof(PacketHeader) + header.dataSize

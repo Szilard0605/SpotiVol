@@ -30,6 +30,8 @@ void Application::Run()
 	UI::SetOnVolumeChangeCallback([this](float volumeLevel) { OnUIVolumeChange(volumeLevel); });
 	m_Client.SetOnVolumeChangeCallback([this](float volumeLevel) { OnServerVolumeChange(volumeLevel); });
 	m_Client.SetServerPingReceivedCallback([this]() { OnServerPing(); });
+	m_Client.SetClientConnectCallback([this](int id, std::string name) { OnClientConnect(id, name); });
+	m_Client.SetClientDisconnectCallback([this](int id) { OnClientDisconnect(id); });
 
 	Logger::Info("Attempting to connect to server at {}:{}", m_AppInfo.serverIPAddress.c_str(), m_AppInfo.serverPort);
 
@@ -99,7 +101,7 @@ void Application::Run()
 			UI::BeginFrame(&m_Window);
 			UI::RenderWindowOutline();
 			UI::RenderConnected();
-			UI::RenderClientList();
+			UI::RenderClientList(m_Clients);
 			UI::EndFrame();
 		}
 		else
@@ -199,4 +201,24 @@ void Application::OnServerPing()
 {
 	Logger::Info("Received ping answer from server");
 	m_LastServerPing = std::chrono::steady_clock::now();
+}
+
+void Application::OnClientConnect(int id, std::string name)
+{
+	Logger::Info("{}({}) connected", name, id);
+	m_Clients.push_back(Client(id, name));
+}
+
+void Application::OnClientDisconnect(int id)
+{
+	Logger::Info("Client with id {} disconnected", id);
+
+	auto count = std::erase_if(m_Clients, [id](const Client& client) {
+		return client.id == id;
+	});
+
+	if (count == 0)
+	{
+		Logger::Info("Failed to erase client {} from the client vector (id not found)", id);
+	}
 }

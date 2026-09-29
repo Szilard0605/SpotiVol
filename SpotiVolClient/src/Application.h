@@ -1,7 +1,7 @@
 #pragma once
 
-#include <string>
 
+#include "Client.h"
 #include "Window.h"
 #include "SVClient.h"
 
@@ -33,6 +33,9 @@ public:
 	~Application();
 	void Run();
 private:
+
+	std::vector<Client> m_Clients;
+
 	ApplicationInfo m_AppInfo;
 	Window m_Window;
 	SVClient m_Client;
@@ -48,5 +51,7 @@ private:
 	void OnServerVolumeChange(float volumeLevel);
 	void OnMuteRequest(bool mute);
 	void OnServerPing();
+	void OnClientConnect(int id, std::string name);
+	void OnClientDisconnect(int id);
 };
 

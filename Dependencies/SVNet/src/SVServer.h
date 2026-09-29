@@ -38,10 +38,11 @@ public:
 	void SetOnClientDisconnectCallback(std::function<void(ServerClientInfo&)> callback) { m_OnClientDisconnectFn = callback; }
 	void SetOnVolumeChangeCallback(std::function<void(ServerClientInfo&, float)> callback) { m_OnVolumeChangeFn = callback; }
 
-	std::vector<ServerClientInfo> GetConnectedClients() { return m_ConnectedClients; }
+	std::vector<ServerClientInfo> GetClientPool() { return m_ClientPool; }
+	std::vector<ServerClientInfo> GetConnectedClients();
 private:
 	int m_ListenSocket;
-	std::vector<ServerClientInfo> m_ConnectedClients;
+	std::vector<ServerClientInfo> m_ClientPool;
 	int m_ConnectedClientCount = 0;
 	float m_Volume = 0.0f;
 	float m_MutePrevVol = 0.0f;

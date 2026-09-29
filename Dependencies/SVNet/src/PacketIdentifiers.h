@@ -10,5 +10,6 @@ enum PacketIdentifier : uint8_t
 	Mute = 3,
 	Unmute = 4,
 	IntroduceClient = 5,
-	Ping = 6
+	ClientDisconnect = 6,
+	Ping = 7
 };
