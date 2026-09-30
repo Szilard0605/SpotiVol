@@ -107,9 +107,10 @@ void UI::RenderClientList(std::vector<Client>& clients)
 	{
 		ImVec2 buttonMin = ImGui::GetItemRectMin();
 		ImVec2 buttonMax = ImGui::GetItemRectMax();
+		float paddingRight = 25.0f;
 
 		ImGui::SetNextWindowPos(
-			ImVec2(buttonMin.x, buttonMax.y)
+			ImVec2(buttonMin.x - paddingRight, buttonMax.y)
 		);
 
 		ImGui::Begin(
